@@ -20,11 +20,13 @@ public class Student {
     @JoinColumn(name = "faculty_id")
     private Faculty faculty;
 
-    @OneToOne
-    @JoinColumn(name = "avatar_id")
-    private Avatar avatar;
-
     public Student() {
+    }
+
+    public Student(long id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
     }
 
     @Override
