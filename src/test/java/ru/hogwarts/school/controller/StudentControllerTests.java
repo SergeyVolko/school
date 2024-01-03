@@ -169,7 +169,7 @@ class StudentControllerTests {
         studentRepository.save(bob);
         byte[] avatar = Files.readAllBytes(Paths.get("src/main/resources/images/1.jpg"));
         LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.put("avatar", Collections.singletonList(new ByteArrayResource(avatar)));
+        body.add("avatar", new ClassPathResource("1.jpg"));
         ResponseEntity<String> responseEntity = restTemplate.exchange(
                 RequestEntity.post("/student/{id}/avatar", bob.getId())
                         .contentType(MediaType.MULTIPART_FORM_DATA)
