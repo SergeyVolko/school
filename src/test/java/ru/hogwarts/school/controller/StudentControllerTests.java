@@ -7,27 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
-import ru.hogwarts.school.controller.StudentController;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class StudentControllerTests {
@@ -52,8 +41,8 @@ class StudentControllerTests {
 
     @AfterEach
     public void cleanUp() {
-        studentRepository.deleteAll();
         avatarRepository.deleteAll();
+        studentRepository.deleteAll();
         facultyRepository.deleteAll();
     }
 
@@ -164,12 +153,11 @@ class StudentControllerTests {
     }
 
     @Test
-    public void testUploadAvatar() throws IOException {
+    public void testUploadAvatar() {
         Student bob = new Student(-1, "Bob", 34);
         studentRepository.save(bob);
-        byte[] avatar = Files.readAllBytes(Paths.get("src/main/resources/images/1.jpg"));
         LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("avatar", new ClassPathResource("1.jpg"));
+        body.add("avatar", new ClassPathResource("kosmo.jpg"));
         ResponseEntity<String> responseEntity = restTemplate.exchange(
                 RequestEntity.post("/student/{id}/avatar", bob.getId())
                         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -177,32 +165,25 @@ class StudentControllerTests {
                 String.class
         );
         System.out.println(responseEntity);
-        /*Student student = new Student(0, "Bob", 34);
-        studentRepository.save(student);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
-
-        MultiValueMap<String, Object> body
-                = new LinkedMultiValueMap<>();
-        body.add("file", new FileSystemResource("C:\\Users\\Lenovo\\IdeaProjects\\school\\src\\main\\resources\\images\\1.jpg"));
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity
-                = new HttpEntity<>(body, headers);
-
-        String serverUrl = "/student/"
-                + student.getId()
-                + "/avatar";
-
-        ResponseEntity<String> response = restTemplate
-                .postForEntity(serverUrl, requestEntity, String.class);
-        System.out.println(response);*/
     }
 
     @Test
-    public void uploadAvatar() {
-       String result = restTemplate.postForObject("http://localhost:" + port + "/student/1/avatar",
-                       new byte[1024], String.class);
-
-        System.out.println(result);
+    public void downloadAvatar() {
+        Student bob = new Student(-1, "Bob", 34);
+        studentRepository.save(bob);
+        LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("avatar", new ClassPathResource("kosmo.jpg"));
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
+                RequestEntity.post("/student/{id}/avatar", bob.getId())
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .body(body),
+                String.class
+        );
+        System.out.println(responseEntity);
+        RequestEntity<Void> request = RequestEntity.get("/student/{id}/avatar/preview", bob.getId()).build();
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                request,
+                byte[].class);
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }

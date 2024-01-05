@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.hogwarts.school.controller.StudentController;
@@ -16,6 +17,9 @@ import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -201,5 +205,19 @@ public class StudentControllerWebMvcTest {
                         {"id":1,"name":"Bob","age":23,"faculty":null},
                         {"id":2,"name":"John","age":24,"faculty":null}
                         ]"""));
+    }
+    @Test
+    public void testUploadAvatar() throws Exception {
+        Student bob = new Student(1, "Bob", 37);
+
+        when(studentRepository.findById(any())).thenReturn(Optional.of(bob));
+
+        MockMultipartFile mockMultipartFile = new MockMultipartFile(
+                "avatar",
+                Files.readAllBytes(Paths.get("data/kosmo.jpg"))
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/student/1/avatar")
+                .file(mockMultipartFile)).andExpect(status().isOk());
     }
 }
