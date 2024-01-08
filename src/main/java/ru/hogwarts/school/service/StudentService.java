@@ -17,12 +17,16 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @Service
 @Transactional
 public class StudentService {
+
+    private static final int MAX_STUDENTS = 5;
+
     @Value("${avatars.dir.path}")
     private String avatarsDir;
     private final StudentRepository studentRepository;
@@ -98,6 +102,21 @@ public class StudentService {
         avatar.setMediaType(file.getContentType());
         avatar.setData(generateImagePreview(filePath));
         avatarRepository.save(avatar);
+    }
+
+    public int getAllStudents() {
+        return studentRepository.getAllStudents();
+    }
+
+    public int getAverageAgeOfStudents() {
+        return studentRepository.getAverageAgeOfStudents();
+    }
+
+    public List<Student> getFiveLastStudentById() {
+        if (getAllStudents() < 5) {
+            throw new UnsupportedOperationException("В базе не достаточно студентов.");
+        }
+        return studentRepository.getFiveLastStudentById();
     }
 
     private String getExtension(String fileName) {

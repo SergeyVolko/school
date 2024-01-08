@@ -17,6 +17,7 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class StudentControllerTests {
@@ -186,4 +187,37 @@ class StudentControllerTests {
                 byte[].class);
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
+
+    @Test
+    public void getAllStudents() {
+        studentRepository.save(new Student(-1, "Bob", 23));
+        studentRepository.save(new Student(-1, "Jim", 21));
+        studentRepository.save(new Student(-1, "Varg", 22));
+        int count = restTemplate.getForObject("/student/count", Integer.class);
+        Assertions.assertThat(count).isEqualTo(3);
+    }
+
+    @Test
+    public void getAverageAgeOfStudents() {
+        studentRepository.save(new Student(-1, "Bob", 21));
+        studentRepository.save(new Student(-1, "Jim", 21));
+        studentRepository.save(new Student(-1, "Varg", 21));
+        int avgAge = restTemplate.getForObject("/student/avgAge", Integer.class);
+        Assertions.assertThat(avgAge).isEqualTo(21);
+    }
+
+    @Test
+    public void getLastFiveStudents() {
+        Student jim = new Student(-1, "Jim", 21);
+        studentRepository.save(new Student(-1, "Bob", 21));
+        studentRepository.save(jim);
+        studentRepository.save(new Student(-1, "Varg", 21));
+        studentRepository.save(new Student(-1, "AAA", 21));
+        studentRepository.save(new Student(-1, "BBB", 21));
+        studentRepository.save(new Student(-1, "BBB", 21));
+        List<Student> students = restTemplate.getForObject("/student/lastFive", List.class);
+        System.out.println(students.get(0));
+        System.out.println(jim.getId());
+    }
+
 }
