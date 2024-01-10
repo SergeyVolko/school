@@ -110,4 +110,19 @@ public class StudentController {
             is.transferTo(os);
         }
     }
+
+    @GetMapping(value = "/count")
+    public int getAllStudents() {
+        return studentService.getAllStudents();
+    }
+
+    @GetMapping(value = "/avgAge")
+    public int getAverageAgeOfStudents() {
+        return studentService.getAverageAgeOfStudents();
+    }
+
+    @GetMapping(value = "/lastFive")
+    ResponseEntity<Collection<Student>> getFiveLastStudentById() {
+        return ResponseEntity.ok(studentService.getFiveLastStudentById());
+    }
 }
