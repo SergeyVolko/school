@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controller;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,11 +9,10 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FacultyControllerTest {
 
@@ -25,16 +25,30 @@ class FacultyControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @AfterEach
+    private void delete() {
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
+    }
+
     @Test
     void contextLoads() throws Exception {
         Assertions.assertThat(facultyController).isNotNull();
     }
     @Test
     void getFacultyInfo() {
-        Faculty faculty = restTemplate
-                .getForObject("http://localhost:" + port + "/faculty/1", Faculty.class);
-        System.out.println(faculty);
         Faculty expect = new Faculty(1, "Математика", "Синий");
+        facultyRepository.save(expect);
+        Faculty faculty = restTemplate
+                .getForObject("http://localhost:" + port + "/faculty/" + expect.getId(),
+                        Faculty.class);
+        System.out.println(faculty);
         Assertions.assertThat(faculty).isEqualTo(expect);
     }
 
@@ -49,27 +63,33 @@ class FacultyControllerTest {
     @Test
     void editFaculty() {
         Faculty curFaculty = new Faculty(102, "Тест", "Синий");
+        facultyRepository.save(curFaculty);
         Faculty editFaculty = new Faculty(102, "Изменен тест", "Желтый");
+        editFaculty.setId(curFaculty.getId());
         restTemplate.put("http://localhost:" + port + "/faculty", editFaculty);
         Faculty actual =
-                restTemplate.getForObject("http://localhost:" + port + "/faculty/102", Faculty.class);
+                restTemplate.getForObject("http://localhost:" + port + "/faculty/"
+                        + editFaculty.getId(), Faculty.class);
         Assertions.assertThat(actual).isEqualTo(editFaculty);
-        restTemplate.put("http://localhost:" + port + "/faculty", curFaculty);
     }
 
     @Test
     void deleteFaculty() {
         Faculty deleteFaculty = new Faculty(123, "Delete", "Red");
-        Faculty faculty =
-                restTemplate.postForObject("http://localhost:" + port + "/faculty", deleteFaculty, Faculty.class);
-        restTemplate.delete("http://localhost:" + port + "/faculty/" + faculty.getId());
+        facultyRepository.save(deleteFaculty);
+        restTemplate.delete("http://localhost:" + port + "/faculty/" + deleteFaculty.getId());
         Assertions.assertThat(this.restTemplate
-                        .getForObject("http://localhost:" + port + "/faculty" + "/" + faculty.getId(), Faculty.class))
+                        .getForObject("http://localhost:" + port + "/faculty" + "/"
+                                + deleteFaculty.getId(), Faculty.class))
                 .isEqualTo(new Faculty(0, null, null));
     }
 
     @Test
     void findFaculties() {
+        Faculty faculty1 = new Faculty(-1, "Математика", "Синий");
+        Faculty faculty2 = new Faculty(-1, "Русский", "Синий");
+        facultyRepository.save(faculty1);
+        facultyRepository.save(faculty2);
         Assertions.assertThat(restTemplate
                         .getForObject("http://localhost:" + port + "/faculty?color=Синий", Collection.class).size())
                 .isEqualTo(2);
@@ -77,18 +97,25 @@ class FacultyControllerTest {
 
     @Test
     void findFacultyByColorOrName() {
-       Faculty faculty =
+        Faculty faculty = new Faculty(-1, "Математика", "Синий");
+        facultyRepository.save(faculty);
+        Faculty actual =
                restTemplate.getForObject("http://localhost:"
                        + port
                        + "/faculty/findByNameOrColor?name=Математика", Faculty.class);
-        Assertions.assertThat(faculty).isEqualTo(new Faculty(1, "Математика", "Синий"));
+        Assertions.assertThat(actual).isEqualTo(faculty);
     }
 
     @Test
     void getFacultyOfStudent() {
-        Faculty faculty = restTemplate.getForObject("http://localhost:"
+        Faculty faculty = new Faculty(-1, "Математика", "Синий");
+        facultyRepository.save(faculty);
+        Student student = new Student(-1, "Bob", 23);
+        student.setFaculty(faculty);
+        studentRepository.save(student);
+        Faculty actual = restTemplate.getForObject("http://localhost:"
                 + port
-                + "/faculty/getFacultyOfStudent/3", Faculty.class);
-        Assertions.assertThat(faculty).isEqualTo(new Faculty(1, "Математика", "Синий"));
+                + "/faculty/getFacultyOfStudent/" + student.getId(), Faculty.class);
+        Assertions.assertThat(actual).isEqualTo(faculty);
     }
 }
