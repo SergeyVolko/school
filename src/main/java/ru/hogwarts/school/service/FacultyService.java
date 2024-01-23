@@ -62,4 +62,16 @@ public class FacultyService {
         logger.info("Поиск факультета по id студента {} c использованием запроса", id);
         return facultyRepository.findFacultyByStudentId(id);
     }
+
+    public String getMaxLengthNameOfFaculty() {
+        String[] result = {""};
+        facultyRepository.findAll().stream()
+                .map(Faculty::getName)
+                .forEach(s -> {
+                    if (result[0].length() < s.length()) {
+                        result[0] = s;
+                    }
+                });
+        return  result[0];
+    }
 }

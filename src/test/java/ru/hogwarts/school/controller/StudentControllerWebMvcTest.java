@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controller;
 
 import net.minidev.json.JSONObject;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -20,6 +23,7 @@ import ru.hogwarts.school.service.StudentService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -219,5 +223,14 @@ public class StudentControllerWebMvcTest {
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/student/1/avatar")
                 .file(mockMultipartFile)).andExpect(status().isOk());
+    }
+
+    @Test
+    public void getAllStudentStartWithA() {
+        Student artem = new Student(-1, "Artem", 34);
+        Student andrey = new Student(-1, "Andrey", 34);
+        Student abber = new Student(-1, "Abber", 22);
+        List<Student> students = List.of(artem, andrey, abber);
+        when(studentRepository.findAll()).thenReturn(students);
     }
 }
