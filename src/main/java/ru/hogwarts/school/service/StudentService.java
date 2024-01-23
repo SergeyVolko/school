@@ -143,13 +143,14 @@ public class StudentService {
         return studentRepository.getFiveLastStudentById();
     }
 
-    public List<Student> getAllStudentStartWithA() {
+    public List<String> getAllStudentStartWithA() {
         logger.info("Получение отсортированного списка имен студентов начинающихся с {}",
                 PREFIX);
         return studentRepository.findAll()
                 .stream()
                 .filter(s -> s.getName().startsWith(PREFIX))
-                .sorted(Comparator.comparing(Student::getName))
+                .map(s -> s.getName().toUpperCase())
+                .sorted(String::compareTo)
                 .toList();
     }
 

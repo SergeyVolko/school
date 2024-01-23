@@ -226,11 +226,22 @@ public class StudentControllerWebMvcTest {
     }
 
     @Test
-    public void getAllStudentStartWithA() {
-        Student artem = new Student(-1, "Artem", 34);
-        Student andrey = new Student(-1, "Andrey", 34);
-        Student abber = new Student(-1, "Abber", 22);
+    public void getAllStudentStartWithA() throws Exception {
+        Student artem = new Student(1, "Artem", 34);
+        Student andrey = new Student(2, "Andrey", 34);
+        Student abber = new Student(3, "Abber", 22);
         List<Student> students = List.of(artem, andrey, abber);
         when(studentRepository.findAll()).thenReturn(students);
+        mockMvc.perform(MockMvcRequestBuilders.get("/student/withA"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(
+                        """
+                        [
+                        "ABBER",
+                        "ANDREY",
+                        "ARTEM"
+                        ]"""
+                ));
     }
 }

@@ -118,4 +118,15 @@ class FacultyControllerTest {
                 + "/faculty/getFacultyOfStudent/" + student.getId(), Faculty.class);
         Assertions.assertThat(actual).isEqualTo(faculty);
     }
+
+    @Test
+    public void getMaxLengthNameOfFaculty() {
+        Faculty faculty1 = new Faculty(-1, "Математика", "Синий");
+        Faculty faculty2 = new Faculty(-1, "Русский", "Синий");
+        Faculty faculty3 = new Faculty(-1, "Физика", "Синий");
+        facultyRepository.save(faculty1);
+        facultyRepository.save(faculty2);
+        facultyRepository.save(faculty3);
+        String expect = "Математика";
+    }
 }

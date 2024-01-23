@@ -128,7 +128,7 @@ public class StudentController {
     }
 
     @GetMapping("/withA")
-    public ResponseEntity<Collection<Student>> getAllStudentStartWithA() {
+    public ResponseEntity<Collection<String>> getAllStudentStartWithA() {
         return ResponseEntity.ok(studentService.getAllStudentStartWithA());
     }
 

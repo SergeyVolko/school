@@ -238,11 +238,9 @@ class StudentControllerTests {
         studentRepository.save(artem);
         studentRepository.save(andrey);
         studentRepository.save(abber);
-        List<Student> expect = List.of(abber, andrey, artem);
         RequestEntity<Void> requestEntity = RequestEntity.get("/student/withA").build();
         ResponseEntity<List> responseEntity = restTemplate.exchange(requestEntity, List.class);
-        LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) responseEntity.getBody().get(0);
-        System.out.println(responseEntity.getBody().get(0));
-        Assertions.assertThat(map.get("name")).isEqualTo(abber.getName());
+        List<String> result = responseEntity.getBody();
+        Assertions.assertThat(result.get(0)).isEqualTo("ABBER");
     }
 }
