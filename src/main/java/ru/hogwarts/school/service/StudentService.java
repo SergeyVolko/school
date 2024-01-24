@@ -19,6 +19,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,6 +30,7 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 public class StudentService {
 
     private static final int MAX_STUDENTS = 5;
+    private static final String PREFIX = "A";
     private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     @Value("${avatars.dir.path}")
@@ -139,6 +141,24 @@ public class StudentService {
             throw new UnsupportedOperationException(message);
         }
         return studentRepository.getFiveLastStudentById();
+    }
+
+    public List<String> getAllStudentStartWithA() {
+        logger.info("Получение отсортированного списка имен студентов начинающихся с {}",
+                PREFIX);
+        return studentRepository.findAll()
+                .stream()
+                .filter(s -> s.getName().startsWith(PREFIX))
+                .map(s -> s.getName().toUpperCase())
+                .sorted(String::compareTo)
+                .toList();
+    }
+
+    public int getAverageAgeOfStudentsFromStream() {
+        logger.info("Получение среднего возраста всех студентов");
+        return (int) studentRepository.findAll().stream()
+                .mapToInt(Student::getAge)
+                .average().orElse(0);
     }
 
     private String getExtension(String fileName) {

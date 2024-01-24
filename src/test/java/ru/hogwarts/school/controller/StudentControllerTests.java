@@ -17,6 +17,7 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -220,4 +221,26 @@ class StudentControllerTests {
         System.out.println(jim.getId());
     }
 
+    @Test
+    public void getAverageAgeOfStudentsStream() {
+        studentRepository.save(new Student(-1, "Bob", 21));
+        studentRepository.save(new Student(-1, "Jim", 21));
+        studentRepository.save(new Student(-1, "Varg", 21));
+        int avgAge = restTemplate.getForObject("/student/streamAvgAge", Integer.class);
+        Assertions.assertThat(avgAge).isEqualTo(21);
+    }
+
+    @Test
+    public void getAllStudentStartWithA() {
+        Student artem = new Student(-1, "Artem", 34);
+        Student andrey = new Student(-1, "Andrey", 34);
+        Student abber = new Student(-1, "Abber", 22);
+        studentRepository.save(artem);
+        studentRepository.save(andrey);
+        studentRepository.save(abber);
+        RequestEntity<Void> requestEntity = RequestEntity.get("/student/withA").build();
+        ResponseEntity<List> responseEntity = restTemplate.exchange(requestEntity, List.class);
+        List<String> result = responseEntity.getBody();
+        Assertions.assertThat(result.get(0)).isEqualTo("ABBER");
+    }
 }

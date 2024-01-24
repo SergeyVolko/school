@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/student")
@@ -122,7 +123,17 @@ public class StudentController {
     }
 
     @GetMapping(value = "/lastFive")
-    ResponseEntity<Collection<Student>> getFiveLastStudentById() {
+    public ResponseEntity<Collection<Student>> getFiveLastStudentById() {
         return ResponseEntity.ok(studentService.getFiveLastStudentById());
+    }
+
+    @GetMapping("/withA")
+    public ResponseEntity<Collection<String>> getAllStudentStartWithA() {
+        return ResponseEntity.ok(studentService.getAllStudentStartWithA());
+    }
+
+    @GetMapping("/streamAvgAge")
+    public int getAverageAgeOfStudentsFromStream() {
+        return studentService.getAverageAgeOfStudentsFromStream();
     }
 }
