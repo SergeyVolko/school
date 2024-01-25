@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -29,7 +30,7 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 @Transactional
 public class StudentService {
 
-    private static final int MAX_STUDENTS = 5;
+    private static final int MAX_STUDENTS = 6;
     private static final String PREFIX = "A";
     private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
@@ -37,6 +38,10 @@ public class StudentService {
     private String avatarsDir;
     private final StudentRepository studentRepository;
     private final AvatarRepository avatarRepository;
+
+    private List<Student> students;
+
+    private int count = -1;
 
     public StudentService(StudentRepository studentRepository, AvatarRepository avatarRepository) {
         this.studentRepository = studentRepository;
@@ -161,6 +166,33 @@ public class StudentService {
                 .average().orElse(0);
     }
 
+    public void printFirstSixStudentsParallel(Consumer<Integer> consumer) {
+        validateStudents();
+        consumer.accept(0);
+        consumer.accept(1);
+
+        new Thread(() -> {
+            consumer.accept(2);
+            consumer.accept(3);
+        }).start();
+
+        new Thread(() -> {
+            consumer.accept(4);
+            consumer.accept(5);
+        }).start();
+    }
+
+    public void printStudentNameSynchronized() {
+        synchronized (this) {
+            count++;
+        }
+        System.out.println(students.get(count).getName());
+    }
+
+    public void printNameStudent(int index) {
+        System.out.println(students.get(index).getName());
+    }
+
     private String getExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
@@ -177,6 +209,15 @@ public class StudentService {
             graphics.dispose();
             ImageIO.write(preview, getExtension(filePath.getFileName().toString()), baos);
             return baos.toByteArray();
+        }
+    }
+
+    private void validateStudents() {
+        count = -1;
+        students = studentRepository.findAll();
+        System.out.println(students);
+        if(students.size() < MAX_STUDENTS) {
+            throw new NoSuchElementException("В институте недостаточное количество студентов");
         }
     }
 }
