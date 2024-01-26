@@ -18,10 +18,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -39,9 +37,7 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final AvatarRepository avatarRepository;
 
-    private List<Student> students;
-
-    private int count = -1;
+    private LinkedList<Student> students;
 
     public StudentService(StudentRepository studentRepository, AvatarRepository avatarRepository) {
         this.studentRepository = studentRepository;
@@ -182,15 +178,12 @@ public class StudentService {
         }).start();
     }
 
-    public void printStudentNameSynchronized() {
-        synchronized (this) {
-            count++;
-        }
-        System.out.println(students.get(count).getName());
+    public synchronized void printStudentNameSynchronized() {
+        System.out.println(students.pollFirst());
     }
 
     public void printNameStudent(int index) {
-        System.out.println(students.get(index).getName());
+        System.out.println(students.get(index));
     }
 
     private String getExtension(String fileName) {
@@ -213,8 +206,7 @@ public class StudentService {
     }
 
     private void validateStudents() {
-        count = -1;
-        students = studentRepository.findAll();
+        students = new LinkedList<>(studentRepository.getSixFirstStudent());
         System.out.println(students);
         if(students.size() < MAX_STUDENTS) {
             throw new NoSuchElementException("В институте недостаточное количество студентов");

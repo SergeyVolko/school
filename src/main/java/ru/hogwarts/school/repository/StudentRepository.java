@@ -28,4 +28,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             + "offset (select count(*) from student) - 5",
             nativeQuery = true)
     List<Student> getFiveLastStudentById();
+
+    @Query(value = "select * from student order by id limit 6",
+    nativeQuery = true)
+    List<Student> getSixFirstStudent();
 }
