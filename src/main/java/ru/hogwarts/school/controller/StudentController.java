@@ -136,4 +136,16 @@ public class StudentController {
     public int getAverageAgeOfStudentsFromStream() {
         return studentService.getAverageAgeOfStudentsFromStream();
     }
+
+    @GetMapping("/print-parallel")
+    public ResponseEntity<Void> printFirstSixStudentsParallel() {
+        studentService.printFirstSixStudentsParallel(studentService::printNameStudent);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/print-synchronized")
+    public ResponseEntity<Void> printFirstSixStudentsParallelSynchronized() {
+        studentService.printFirstSixStudentsParallel(i -> studentService.printStudentNameSynchronized());
+        return ResponseEntity.ok().build();
+    }
 }
